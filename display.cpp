@@ -1,9 +1,11 @@
 #include "wavtape.h"
 
+char dBuf[DISP_COLS];
 
 void dispInit() {
   //disp = new LiquidCrystal_PCF8574(DISP_ADDR); 
   disp.begin(DISP_COLS, DISP_ROWS);
+  disp.createChar(1, (const uint8_t *)F("\x00\x10\x08\x04\x02\x01\x00\x00"));
   disp.setBacklight(255);
 }
 
@@ -17,19 +19,43 @@ void display(char * buf) {
 }
 
 void dispLine(int line, char * buf) {
-  int l = min(strlen(buf), DISP_COLS);
+  int i, l;
+
+  l = strlen(buf);
+  for (i = 0; i < DISP_COLS; i++) dBuf[i] = ' ';
+
+  if (l <= DISP_COLS) {
+    for (i = 0; i < l; i++) dBuf[i] = buf[i];
+  }
+  else {
+    for (i = 0; i < 3; i++) dBuf[i] = buf[i];
+    for (i = 3; i < 6; i++) dBuf[i] = '.';
+    for (i = 6; i < DISP_COLS; i++) dBuf[i] = buf[l - DISP_COLS + i];
+  }
   disp.setCursor(0, line);
-  for (int i = 0; i < DISP_COLS; i++)
-    disp.write(i < l ? buf[i] : ' ');
+  for (i = 0; i < DISP_COLS; i++) disp.write(dBuf[i]);
   Serial.println(buf);
 }
 
-void dispLine(int line, int i) {
-  char b[10];
-  sprintf(b, "%d", i);
-  dispLine(line, b);
+void dispError(char * buf) {
+  dispLine2(buf);
+  delay(2000);
 }
 
-void dispStatus(char * buf) {
+void dispHeader(char * buf) {
+  dispLine(0, buf);
+}
+
+void dispLine1(char * buf) {
+  dispLine(DISP_LINE1, buf);
+}
+
+void dispLine2(char * buf) {
+  dispLine(DISP_LINE2, buf);
+}
+
+void dispButtons(char * buf) {
   dispLine(3, buf);
 }
+
+

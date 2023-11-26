@@ -19,7 +19,7 @@ typedef struct {
 typedef tMenuItem tMenu[];
 
 
-void menuDo(tMenu menu, int size);
+void menuDo(char* header, char* title, tMenu menu, int size);
 
 
 #endif

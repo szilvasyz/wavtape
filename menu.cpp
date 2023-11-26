@@ -4,13 +4,15 @@
 void menuDummy() {}
 
 
-void menuDo(tMenu menu, int size) {
+void menuDo(char* header, char* title, tMenu menu, int size) {
   int mPos = 0;
   uint16_t b;
 
   while (true) {
-    disp.setCursor(0, 0);
-    disp.printf("%16s", menu[mPos].text);
+    dispHeader(header);
+    dispButtons(" PRV NXT ESC SEL");
+    dispLine1(title);
+    dispLine2(menu[mPos].text);
     while ((b = button.get()) == 0);
     switch (b) {
       case BTN_VAL_NEXT:

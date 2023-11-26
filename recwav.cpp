@@ -3,6 +3,7 @@
 
 int preamp = 0;
 int recNo = 0;
+int rpaused = 0;
 
 
 int openRecDir() {
@@ -10,9 +11,9 @@ int openRecDir() {
   if (dir.open(REC_DIR))
     return true;
     
-  Serial.println("No rec dir");
+  dispError("Creating rec dir");
   if (!sd.mkdir(REC_DIR, true))
-    Serial.println("Can't create recdir");
+    dispError("Can't create dir");
      
   return dir.open(REC_DIR);
 }
@@ -31,61 +32,75 @@ void setPreamp() {
 }
 
 
-void recStatus() {
-  sprintf(sBuf, " ___  %3i STOP PAUSE", preamp ? 12 : 0);
-  dispStatus(sBuf);
+void recButtons1() {
+  sprintf(sBuf, " ___ %s ESC REC", preamp ? "+12" : "  0");
+  dispButtons(sBuf);
+}
+
+
+void recButtons2() {
+  sprintf(sBuf, " ___ %s STP %s", preamp ? "+12" : "  0", rpaused ? "RES" : "PAU");
+  dispButtons(sBuf);
+}
+
+int findRecName(int rno) {
+  while (true) {
+    sprintf(nBuf, "rec%05d.wav", rno);
+    if (!dir.exists(nBuf))
+      break;
+    rno++;
+  }
+  return rno;
 }
 
 
 void record() {
   int b;
 
-  recNo = 0;
-
+  dispHeader("Record");
   if (!openRecDir()) {
     return;
   }
 
-  Serial.println("Press to record");
-  while (button.peek() == 0);
-
-  switch (button.get()) {
-    case 1:
-      dir.getName(nBuf, NBUF_SIZE);
-      Serial.println(nBuf);
-
-      while (true) {
-        sprintf(nBuf, "rec%05d.wav", recNo);
-        if (!dir.exists(nBuf))
-          break;
-        recNo++;
-      }
-      Serial.print("File open: ");
-      //Serial.println(dataFile.open(nBuf, O_RDWR | O_CREAT));
-      Serial.println(file.createContiguous(&dir, nBuf, 512UL * 2048 * 20 ));
-      Serial.print("Recording file ");
-      Serial.println(nBuf);
-
-      recFile(&file);
-      file.close();
-      recNo++;
-      break;
-    case 2:
-      preamp = 1 - preamp;
-      Serial.print("Preamp :");
-      Serial.println(preamp ? "12dB" : "0dB");
-      if (preamp) {
-        digitalWrite(ANA_PREAMP_PIN, LOW);
-        pinMode(ANA_PREAMP_PIN, OUTPUT);
-      }
-      else {
-        digitalWrite(ANA_PREAMP_PIN, LOW);
-        pinMode(ANA_PREAMP_PIN, INPUT);
-      }
-      break;
-
+  strcpy(pBuf, REC_DIR);
+  if (pBuf[strlen(pBuf) - 1] != '/') {
+    strcat(pBuf, "/");
   }
+  recNo = findRecName(0);
+  
+  while (true) {
 
+    dispLine1(pBuf);
+    dispLine2(nBuf);
+    recButtons1();
+
+    while (button.peek() == 0);
+
+    switch (button.get()) {
+      
+      case BTN_VAL_NEXT:
+        preamp = 1 - preamp;
+        Serial.print("Preamp :");
+        Serial.println(preamp ? "12dB" : "0dB");
+        break;
+
+      case BTN_VAL_ABORT:
+        return;
+
+      case BTN_VAL_ENTER:
+        Serial.print("File open: ");
+        //Serial.println(dataFile.open(nBuf, O_RDWR | O_CREAT));
+        Serial.println(file.createContiguous(&dir, nBuf, 512UL * 2048 * 20 ));
+        Serial.print("Recording file ");
+        Serial.println(nBuf);
+
+        recFile(&file);
+        file.close();
+        recNo = findRecName(recNo);
+        break;
+
+    }
+  }
 }
 
 
@@ -93,6 +108,13 @@ void recFile(File32 *f) {
   uint16_t sr = REC_SAMPLERATE;
   uint32_t ds = 0, ss = 0;
   int rr = true;
+  int recphase = 0;
+
+  rpaused = 0;
+
+  dispLine1(nBuf);
+  dispLine2("");
+  recButtons2();
 
   if (f->isWritable()) {
     Serial.print("!");
@@ -107,46 +129,55 @@ void recFile(File32 *f) {
     Serial.println(PCM_startRec(true));
 
     setPreamp();
-    recStatus();
+    recButtons2();
 
     while (rr) {
-      f->write(PCM_getRecBuf(), PCM_BUFSIZ);
-      PCM_releaseRecBuf();
-      ss += PCM_BUFSIZ;
-      if ((++ds % 100) == 0) {
-        Serial.print(".");
-        if (ds >= 4000) {
-          Serial.println("!");
-          ds = 0;
+      if (!rpaused) {
+        f->write(PCM_getRecBuf(), PCM_BUFSIZ);
+        PCM_releaseRecBuf();
+        ss += PCM_BUFSIZ;
+        if ((++ds % 100) == 0) {
+          Serial.print(".");
+          recphase = ++recphase % 4;
+          disp.setCursor(0, DISP_LINE2);
+          disp.write("\x01|/-"[recphase]);
+          if (ds >= 4000) {
+            Serial.println("!");
+            ds = 0;
+          }
         }
       }
+
       switch (button.get()) {
-        case BTN_VAL_PREV:
+
+        case BTN_VAL_NEXT:
           preamp = 1 - preamp;
           setPreamp();
-          recStatus();
+          recButtons2();
           break;
+
         case BTN_VAL_ABORT:
-          Serial.print(" -break-");
+          sprintf(sBuf, "%ld bytes", ss);
+          W.finalizeBuffer(ss);
+          f->seekSet(0);
+          f->write(W.getBuffer(), WAVHDR_LEN);
+          f->truncate(ss + WAVHDR_LEN); 
+          dispError(sBuf);
           rr = 0;
           break;
+
         case BTN_VAL_ENTER:
+          rpaused = 1 - rpaused;
+          recButtons2();
           break;
 
       }
     }
   }
   else
-    Serial.println("File not available.");
+    dispError("Can't write file");
+  
   Serial.println("Done.");
-
-  Serial.print("Stop recording: ");
   Serial.println(PCM_stop());
-  sprintf(sBuf, "%0ld bytes written.", ss);
-  Serial.println(sBuf);
 
-  W.finalizeBuffer(ss);
-  f->seekSet(0);
-  f->write(W.getBuffer(), WAVHDR_LEN);
-  f->truncate(ss + WAVHDR_LEN);
 }

@@ -10,5 +10,5 @@ tMenu setMenu = {
 
 
 void doSetMenu() {
-  menuDo(setMenu, size(setMenu));
+  menuDo("Settings", "Select setting:", setMenu, size(setMenu));
 }

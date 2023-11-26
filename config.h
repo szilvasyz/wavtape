@@ -18,6 +18,8 @@
 
 #define DISP_ROWS 4
 #define DISP_COLS 20
+#define DISP_LINE1 1
+#define DISP_LINE2 2
 #define DISP_ADDR 0x27
 
 #define SD_CS 4
@@ -25,6 +27,7 @@
 #define SD_INIT_TRY 5
 
 
+#define SBUF_SIZE 80
 #define NBUF_SIZE 60
 #define PBUF_SIZE 200
 #define FILEEXT ".wav"

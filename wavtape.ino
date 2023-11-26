@@ -10,10 +10,11 @@ File32 dir;
 File32 file;
 char nBuf[NBUF_SIZE];
 char pBuf[PBUF_SIZE] = "/";
+char sVer[DISP_COLS];
 
 
 tMenu mainMenu = {
-  {text:"Play", action:browse},
+  {text:"Playback", action:browse},
   {text:"Record", action:record},
   {text:"Settings", action:doSetMenu}
 };
@@ -21,7 +22,7 @@ tMenu mainMenu = {
 
 int show = 0;
 int sdready = 0;
-char sBuf[80];
+char sBuf[SBUF_SIZE];
 
 
 void setup() {
@@ -35,21 +36,24 @@ void setup() {
   pinMode(SD_CS, OUTPUT);
   digitalWrite(SD_CS, HIGH);
 
-  sprintf(sBuf, "%s v%d.%d-%s", PRODUCT, VER_MAJOR, VER_MINOR, VER_NAME);
-  dispLine(0, sBuf);
+  sprintf(sVer, "%s v%d.%d-%s", PRODUCT, VER_MAJOR, VER_MINOR, VER_NAME);
+  dispHeader(sVer);
   delay(2000);
-  disp.setCursor(0, 1);
+  dispLine1("Initializing...");
+  sBuf[0] = '\0';
 
   while (!(sdready = sd.begin(SD_CONFIG)) && init_cnt--) {
-    display("#");
+    strcat(sBuf, "#");
+    dispLine2(sBuf);
     digitalWrite(SD_CS, HIGH);
     delay(500);
   }
 
   if (!sdready) {
-    display(" - No SD card.");
+    dispLine2("No SD card.");
     while (true);
   }
+  dispLine2("SD ok.");
 
   PCM_init(DIG_OUT_PIN, ANA_IN_PIN);
  
@@ -58,7 +62,7 @@ void setup() {
 
 void loop() {
 
-  menuDo(mainMenu, size(mainMenu));
+  menuDo(sVer, "Select mode:", mainMenu, size(mainMenu));
 
 }  // loop()
 

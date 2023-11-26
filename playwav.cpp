@@ -3,6 +3,7 @@
 
 File32 *ff;
 int atten = 0;
+int paused = 0;
 
 
 size_t readHandler(uint8_t *b, size_t s) {
@@ -29,8 +30,8 @@ void setAtten() {
 
 
 void playStatus() {
-  sprintf(sBuf, " ___  %3i STOP PAUSE", atten ? -12 : 0);
-  dispStatus(sBuf);
+  sprintf(sBuf, " ___ %s STP %s", atten ? "-12" : "  0", paused ? "RES" : "PAU");
+  dispButtons(sBuf);
 }
 
 
@@ -42,10 +43,15 @@ void playWav(File32 * f) {
   int pct;
   int pct0 = 0;
 
+  paused = 0;
   setAtten();
   playStatus();
 
   f->rewind();
+  f->getName(sBuf, SBUF_SIZE);
+  dispLine1(sBuf);
+  dispLine2("");
+
   if (f->available()) {
     if (wavInfo(f)) {
       sr = W.getData().sampleRate;
@@ -57,39 +63,59 @@ void playWav(File32 * f) {
       Serial.println(PCM_startPlay(true));
 
       while ((ss < ds) && pp) {
-        f->read(PCM_getPlayBuf(), PCM_BUFSIZ);
-        PCM_pushPlayBuf();
-        ss += PCM_BUFSIZ;
-        pct = 100 * ss / ds;
-        if (pct != pct0) {
-          pct0 = pct;
-          if (((pct % 10) % 3) == 1) Serial.print(".");
-          if ((pct % 10) == 0) {
-            Serial.print(pct);
-            Serial.print("%");
+        if (!paused) {
+          f->read(PCM_getPlayBuf(), PCM_BUFSIZ);
+          PCM_pushPlayBuf();
+          ss += PCM_BUFSIZ;
+          pct = 100 * ss / ds;
+          if (pct != pct0) {
+            pct0 = pct;
+            if (((pct % 10) % 3) == 1) {
+              disp.setCursor(0, DISP_LINE2);
+              disp.write("\x01/-"[(pct % 10) / 3]);
+              Serial.print(".");
+            }
+            if ((pct % 10) == 0) {
+              sprintf(sBuf, "+%d%%", pct);
+              dispLine2(sBuf);
+              Serial.print(pct);
+              Serial.print("%");
+            }
           }
         }
+
         switch (button.get()) {
-          case 1:
-            Serial.print(" -break-");
-            pp = 0;
-            break;
-          case 2:
+
+          case BTN_VAL_NEXT:
             atten = 1 - atten;
             setAtten();
             playStatus();
-          break;
+            break;
+
+          case BTN_VAL_ABORT:
+            Serial.print(" -break-");
+            pp = 0;
+            break;
+
+          case BTN_VAL_ENTER:
+            paused = 1 - paused;
+            playStatus();
+            break;
         }
       }
       Serial.println();
     }
     else {
-      Serial.println("Invalid file.");
+      dispError("Unsupported file");
+      Serial.println("Unsupported file");
     }
   }
-  else
-    Serial.println("File not available.");
+  else {
+    dispError("Can't open file");
+    Serial.println("Can't open file");
+  }
 
+  dispError("Done");
   Serial.println("Done.");
 
   Serial.print("Stop play: ");

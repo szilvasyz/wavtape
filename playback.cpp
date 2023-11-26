@@ -47,34 +47,35 @@ void browse() {
   int d;
   int dirLoop;
 
+  dispHeader("Playback");
   while (true) {
     dir.close();
     if (!dir.open(pBuf)) {
-      dispLine(1, "Error opening dir");
+      dispError("Error opening dir");
       return;
     }
     
     if ((i = nextFile(0)) == 0) {
-      dispLine(1, "no files");
+      dispError("No files");
       dir.close();
       if (!upDir())
         return;
     }
     else {
-    
-      dispLine(3, pBuf);
 
       dirLoop = true;
 
       while (dirLoop) {
+
         file.open(&dir, i, O_RDONLY);
         file.getName(nBuf, 60);
         if (d = file.isDir()) strcat(nBuf, "/");
 
         file.close();
 
-        dispLine(2, i);
-        dispLine(1, nBuf);
+        dispLine1(pBuf);
+        dispLine2(nBuf);
+        dispButtons(" PRV NXT ESC SEL");
 
         while ((b = button.get()) == 0);
 
@@ -103,7 +104,6 @@ void browse() {
               break;
             }
             else {
-              dispLine(3, "play");
               file.open(&dir, i, O_RDONLY);
               playWav(&file);
               file.close();

@@ -16,11 +16,19 @@
 #define BTN_VAL_ABORT 4
 #define BTN_VAL_ENTER 8
 
-#define DISP_ROWS 4
-#define DISP_COLS 20
+#define DISP_ADDR 0x27
+#define DISP_ROWS 2
+#define DISP_COLS 16
+
+#if (DISP_ROWS == 4)
+#define DISP_HEADER 0
 #define DISP_LINE1 1
 #define DISP_LINE2 2
-#define DISP_ADDR 0x27
+#define DISP_BUTTONS 3
+#else
+#define DISP_LINE1 0
+#define DISP_LINE2 1
+#endif
 
 #define SD_CS 4
 #define SD_FAT_TYPE 1

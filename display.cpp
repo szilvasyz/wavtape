@@ -43,7 +43,9 @@ void dispError(char * buf) {
 }
 
 void dispHeader(char * buf) {
-  dispLine(0, buf);
+#ifdef DISP_HEADER
+  dispLine(DISP_HEADER, buf);
+#endif
 }
 
 void dispLine1(char * buf) {
@@ -55,7 +57,9 @@ void dispLine2(char * buf) {
 }
 
 void dispButtons(char * buf) {
-  dispLine(3, buf);
+#ifdef DISP_BUTTONS
+  dispLine(DISP_BUTTONS, buf);
+#endif
 }
 
 

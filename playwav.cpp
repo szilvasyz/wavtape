@@ -60,7 +60,11 @@ void playWav(File32 * f) {
       Serial.print("Setup: ");
       Serial.println(PCM_setupPWM(sr, 0));
       Serial.print("Start play: ");
+      delay(200);
       Serial.println(PCM_startPlay(true));
+
+      PCM_clearOverrun();
+      digitalWrite(RED_LED, LOW);
 
       while ((ss < ds) && pp) {
         if (!paused) {
@@ -84,6 +88,8 @@ void playWav(File32 * f) {
           }
         }
 
+        if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
+
         switch (button.get()) {
 
           case BTN_VAL_NEXT:
@@ -99,6 +105,7 @@ void playWav(File32 * f) {
 
           case BTN_VAL_ENTER:
             paused = 1 - paused;
+            PCM_setPause(paused);
             playStatus();
             break;
         }
@@ -114,6 +121,9 @@ void playWav(File32 * f) {
     dispError("Can't open file");
     Serial.println("Can't open file");
   }
+
+  Serial.print(PCM_getOverrun());
+  Serial.println("overruns");
 
   dispError("Done");
   Serial.println("Done.");

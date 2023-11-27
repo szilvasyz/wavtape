@@ -4,6 +4,8 @@
 int preamp = 0;
 int recNo = 0;
 int rpaused = 0;
+uint16_t rsamplerate = REC_SAMPLERATE;
+uint16_t rsrates[] = {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000};
 
 
 int openRecDir() {
@@ -33,7 +35,7 @@ void setPreamp() {
 
 
 void recButtons1() {
-  sprintf(sBuf, " ___ %s ESC REC", preamp ? "+12" : "  0");
+  sprintf(sBuf, " %02uk %s ESC REC", rsamplerate / 1000U, preamp ? "+12" : "  0");
   dispButtons(sBuf);
 }
 
@@ -56,6 +58,8 @@ int findRecName(int rno) {
 
 void record() {
   int b;
+  int rsr = 0;
+
 
   dispHeader("Record");
   if (!openRecDir()) {
@@ -77,7 +81,17 @@ void record() {
     while (button.peek() == 0);
 
     switch (button.get()) {
-      
+
+      case BTN_VAL_PREV:
+        for (rsr = 0; rsrates[rsr] != 0; rsr++)
+          if (rsamplerate == rsrates[rsr])
+            break;
+        if (rsrates[rsr] == 0) rsr =0;
+        if (rsrates[++rsr] == 0) rsr = 0;
+        rsamplerate = rsrates[rsr];
+        recButtons2();
+        break;
+
       case BTN_VAL_NEXT:
         preamp = 1 - preamp;
         Serial.print("Preamp :");
@@ -94,7 +108,7 @@ void record() {
         Serial.print("Recording file ");
         Serial.println(nBuf);
 
-        recFile(&file);
+        recFile(&file, rsamplerate);
         file.close();
         recNo = findRecName(recNo);
         break;
@@ -104,11 +118,11 @@ void record() {
 }
 
 
-void recFile(File32 *f) {
-  uint16_t sr = REC_SAMPLERATE;
+void recFile(File32 *f, uint16_t sr) {
   uint32_t ds = 0, ss = 0;
   int rr = true;
   int recphase = 0;
+  uint32_t overrun;
 
   rpaused = 0;
 
@@ -123,13 +137,17 @@ void recFile(File32 *f) {
     f->seekSet(0);
     f->write(W.getBuffer(), WAVHDR_LEN);
 
+    setPreamp();
+    recButtons2();
+
     Serial.print("Setup: ");
     Serial.println(PCM_setupPWM(sr, 0));
     Serial.print("Start recording: ");
+    delay(200);
     Serial.println(PCM_startRec(true));
 
-    setPreamp();
-    recButtons2();
+    PCM_clearOverrun();
+    digitalWrite(RED_LED, LOW);
 
     while (rr) {
       if (!rpaused) {
@@ -148,6 +166,7 @@ void recFile(File32 *f) {
         }
       }
 
+      if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
       switch (button.get()) {
 
         case BTN_VAL_NEXT:
@@ -157,17 +176,23 @@ void recFile(File32 *f) {
           break;
 
         case BTN_VAL_ABORT:
+          overrun = PCM_getOverrun();
+          PCM_stop();
+
           sprintf(sBuf, "%ld bytes", ss);
           W.finalizeBuffer(ss);
           f->seekSet(0);
           f->write(W.getBuffer(), WAVHDR_LEN);
           f->truncate(ss + WAVHDR_LEN); 
           dispError(sBuf);
+          Serial.print(overrun);
+          Serial.println("overruns");
           rr = 0;
           break;
 
         case BTN_VAL_ENTER:
           rpaused = 1 - rpaused;
+          PCM_setPause(rpaused);
           recButtons2();
           break;
 
@@ -178,6 +203,5 @@ void recFile(File32 *f) {
     dispError("Can't write file");
   
   Serial.println("Done.");
-  Serial.println(PCM_stop());
 
 }

@@ -11,14 +11,18 @@
 #define BTN_PIN_ABORT 20
 #define BTN_PIN_ENTER 21
 
+#define GREEN_LED 0
+#define RED_LED 10
+
+
 #define BTN_VAL_PREV  1
 #define BTN_VAL_NEXT  2
 #define BTN_VAL_ABORT 4
 #define BTN_VAL_ENTER 8
 
 #define DISP_ADDR 0x27
-#define DISP_ROWS 2
-#define DISP_COLS 16
+#define DISP_ROWS 4
+#define DISP_COLS 20
 
 #if (DISP_ROWS == 4)
 #define DISP_HEADER 0

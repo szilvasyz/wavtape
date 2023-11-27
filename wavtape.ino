@@ -19,6 +19,7 @@ tMenu mainMenu = {
   {text:"Settings", action:doSetMenu}
 };
 
+void(* resetFunc) (void) = 0;
 
 int show = 0;
 int sdready = 0;
@@ -28,6 +29,11 @@ char sBuf[SBUF_SIZE];
 void setup() {
   int init_cnt = SD_INIT_TRY;
 
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(RED_LED, LOW);
+  
   Serial.begin(115200);
 
   dispInit();
@@ -51,7 +57,8 @@ void setup() {
 
   if (!sdready) {
     dispLine2("No SD card.");
-    while (true);
+    while (button.get() == 0);
+    resetFunc();
   }
   dispLine2("SD ok.");
 

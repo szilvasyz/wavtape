@@ -28,7 +28,10 @@ int prevFile(int index) {
   int i = index, j;
 
   dir.rewindDirectory();
-  while ((j = nextFile(i)) != index) i = j;
+  while ((j = nextFile(i)) != index) {
+    // Serial.println(j);
+    i = j;
+  }
   return i;
 }
 
@@ -50,12 +53,13 @@ void browse() {
   dispHeader("Playback");
   while (true) {
     dir.close();
+    delay(1);
     if (!dir.open(pBuf)) {
       dispError("Error opening dir");
       return;
     }
     
-    if ((i = nextFile(0)) == 0) {
+    if ((i = nextFile(-1)) == -1) {
       dispError("No files");
       dir.close();
       if (!upDir())
@@ -67,6 +71,11 @@ void browse() {
 
       while (dirLoop) {
 
+        file.close();
+        delay(1);
+        // Serial.print(i);
+        // Serial.print(":");
+        // Serial.println(file.open(&dir, i, O_RDONLY));
         file.open(&dir, i, O_RDONLY);
         file.getName(nBuf, 60);
         if (d = file.isDir()) strcat(nBuf, "/");

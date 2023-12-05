@@ -7,6 +7,8 @@
 void dispInit();
 void dispClear();
 void display(char * buf);
+void display(char c);
+void dispSetPos(int x, int y);
 void dispLine(int line, char * buf);
 void dispError(char * buf);
 void dispHeader(char * buf);

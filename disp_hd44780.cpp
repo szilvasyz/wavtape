@@ -1,5 +1,9 @@
 #include "wavtape.h"
 
+#ifdef DISP_HD44780
+
+LiquidCrystal_PCF8574 disp(DISP_ADDR);
+
 char dBuf[DISP_COLS];
 
 void dispInit() {
@@ -16,6 +20,15 @@ void dispClear() {
 void display(char * buf) {
   disp.print(buf);
   Serial.print(buf);
+}
+
+void display(char c) {
+  disp.print(c);
+  Serial.print(c);
+}
+
+void dispSetPos(int x, int y) {
+  disp.setCursor(x, y);
 }
 
 void dispLine(int line, char * buf) {
@@ -62,4 +75,5 @@ void dispButtons(char * buf) {
 #endif
 }
 
+#endif
 

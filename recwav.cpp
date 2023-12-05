@@ -157,8 +157,8 @@ void recFile(File32 *f, uint16_t sr) {
         if ((++ds % 100) == 0) {
           Serial.print(".");
           recphase = ++recphase % 4;
-          disp.setCursor(0, DISP_LINE2);
-          disp.write("\x01|/-"[recphase]);
+          dispSetPos(0, DISP_LINE2);
+          display("\x01|/-"[recphase]);
           if (ds >= 4000) {
             Serial.println("!");
             ds = 0;

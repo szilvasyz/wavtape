@@ -75,8 +75,8 @@ void playWav(File32 * f) {
           if (pct != pct0) {
             pct0 = pct;
             if (((pct % 10) % 3) == 1) {
-              disp.setCursor(0, DISP_LINE2);
-              disp.write("\x01/-"[(pct % 10) / 3]);
+              dispSetPos(0, DISP_LINE2);
+              display("\x01/-"[(pct % 10) / 3]);
               Serial.print(".");
             }
             if ((pct % 10) == 0) {

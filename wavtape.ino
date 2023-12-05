@@ -2,7 +2,6 @@
 
 
 MyButton button(BTN_PIN_PREV, BTN_PIN_NEXT, BTN_PIN_ABORT, BTN_PIN_ENTER);
-LiquidCrystal_PCF8574 disp(DISP_ADDR);
 SdFat sd;
 WAVhdr W;
 

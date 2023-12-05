@@ -4,7 +4,7 @@
 
 LiquidCrystal_PCF8574 disp(DISP_ADDR);
 
-char dBuf[DISP_COLS];
+char dBuf[DISP_COLS + 1];
 
 void dispInit() {
   //disp = new LiquidCrystal_PCF8574(DISP_ADDR); 

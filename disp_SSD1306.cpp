@@ -4,7 +4,7 @@
 
 U8X8_SSD1306_128X64_NONAME_HW_I2C disp;
 
-char dBuf[DISP_COLS];
+char dBuf[DISP_COLS + 1];
 
 void dispInit() {
   disp.setI2CAddress(DISP_ADDR << 1);

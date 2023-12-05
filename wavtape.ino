@@ -9,7 +9,7 @@ File32 dir;
 File32 file;
 char nBuf[NBUF_SIZE];
 char pBuf[PBUF_SIZE] = "/";
-char sVer[DISP_COLS];
+char sVer[DISP_COLS + 1];
 
 
 tMenu mainMenu = {

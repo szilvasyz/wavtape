@@ -1,8 +1,14 @@
 #include "wavtape.h"
 
-#ifdef DISP_SSD1306
+#if defined(DISP_SSD1306) || defined(DISP_SSD1309)
 
-U8X8_SSD1306_128X64_NONAME_HW_I2C disp;
+#if defined(DISP_SSD1306)
+  U8X8_SSD1306_128X64_NONAME_HW_I2C disp;
+#elif defined(DISP_SSD1309)
+  U8X8_SSD1309_128X64_NONAME0_HW_I2C disp;
+#else
+  #error "invalid display"
+#endif
 
 char dBuf[DISP_COLS + 1];
 

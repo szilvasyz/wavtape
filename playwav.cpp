@@ -4,6 +4,7 @@
 File32 *ff;
 int atten = 0;
 int paused = 0;
+int pinvert = 0;
 
 
 size_t readHandler(uint8_t *b, size_t s) {
@@ -30,7 +31,7 @@ void setAtten() {
 
 
 void playStatus() {
-  sprintf(sBuf, " ___ %s STP %s", atten ? "-12" : "  0", paused ? "RES" : "PAU");
+  sprintf(sBuf, "  %c  %s STP %s", pinvert ? '-' : '+', atten ? "-12" : "  0", paused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
@@ -44,6 +45,7 @@ void playWav(File32 * f) {
   int pct0 = 0;
 
   paused = 0;
+  pinvert = PCM_getPlayInv();
   setAtten();
   playStatus();
 
@@ -91,6 +93,12 @@ void playWav(File32 * f) {
         if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
 
         switch (button.get()) {
+
+          case BTN_VAL_PREV:
+            pinvert = !pinvert;
+            PCM_setPlayInv(pinvert);
+            playStatus();
+            break;
 
           case BTN_VAL_NEXT:
             atten = 1 - atten;

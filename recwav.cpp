@@ -4,6 +4,7 @@
 int preamp = 0;
 int recNo = 0;
 int rpaused = 0;
+int rinvert = 0;
 uint16_t rsamplerate = REC_SAMPLERATE;
 uint16_t rsrates[] = {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000};
 
@@ -41,7 +42,7 @@ void recButtons1() {
 
 
 void recButtons2() {
-  sprintf(sBuf, " ___ %s STP %s", preamp ? "+12" : "  0", rpaused ? "RES" : "PAU");
+  sprintf(sBuf, "  %c  %s STP %s", rinvert ? '-' : '+', preamp ? "+12" : "  0", rpaused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
@@ -59,7 +60,6 @@ int findRecName(int rno) {
 void record() {
   int b;
   int rsr = 0;
-
 
   dispHeader("Record");
   if (!openRecDir()) {
@@ -125,6 +125,7 @@ void recFile(File32 *f, uint16_t sr) {
   uint32_t overrun;
 
   rpaused = 0;
+  rinvert = PCM_getRecInv();
 
   dispLine1(nBuf);
   dispLine2("");
@@ -168,6 +169,12 @@ void recFile(File32 *f, uint16_t sr) {
 
       if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
       switch (button.get()) {
+
+        case BTN_VAL_PREV:
+          rinvert = !rinvert;
+          PCM_setRecInv(rinvert);
+          recButtons2();
+          break;
 
         case BTN_VAL_NEXT:
           preamp = 1 - preamp;

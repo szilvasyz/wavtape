@@ -12,6 +12,10 @@ int nameMatch(char * buf, char * match) {
 int nextFile(int index) {
   int i, d;
 
+  if (file.isOpen()) {
+    file.close();
+  }
+
   while (file.openNext(&dir, O_RDONLY)) {
     file.getName(nBuf, NBUF_SIZE);
     i = file.dirIndex();
@@ -53,7 +57,7 @@ void browse() {
   dispHeader("Playback");
   while (true) {
     dir.close();
-    delay(1);
+
     if (!dir.open(pBuf)) {
       dispError("Error opening dir");
       return;
@@ -71,13 +75,15 @@ void browse() {
 
       while (dirLoop) {
 
-        file.close();
-        delay(1);
+        if (file.isOpen()) {
+          file.close();
+          delay(10);
+        }
         // Serial.print(i);
         // Serial.print(":");
         // Serial.println(file.open(&dir, i, O_RDONLY));
         file.open(&dir, i, O_RDONLY);
-        file.getName(nBuf, 60);
+        file.getName(nBuf, NBUF_SIZE);
         if (d = file.isDir()) strcat(nBuf, "/");
 
         file.close();

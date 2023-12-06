@@ -19,7 +19,7 @@
 #include "recwav.h"
 
 
-#define SPI_CLOCK SD_SCK_MHZ(8)
+#define SPI_CLOCK SD_SCK_MHZ(1)
 #define SD_CONFIG SdSpiConfig(SD_CS, DEDICATED_SPI, SPI_CLOCK)
 
 #define size(x) ((int)(sizeof(x) / sizeof(x[0])))

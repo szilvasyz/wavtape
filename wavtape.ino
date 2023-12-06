@@ -7,8 +7,8 @@ WAVhdr W;
 
 File32 dir;
 File32 file;
-char nBuf[NBUF_SIZE];
-char pBuf[PBUF_SIZE] = "/";
+char nBuf[NBUF_SIZE + 1];
+char pBuf[PBUF_SIZE + 1] = "/";
 char sVer[DISP_COLS + 1];
 
 

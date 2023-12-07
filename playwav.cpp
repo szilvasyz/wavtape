@@ -60,7 +60,7 @@ void playWav(File32 * f) {
       ds = W.getData().dataSize;
 
       Serial.print("Setup: ");
-      Serial.println(PCM_setupPWM(sr, 0));
+      Serial.println(PCM_setupPWM(sr, pinvert));
       Serial.print("Start play: ");
       delay(200);
       Serial.println(PCM_startPlay(true));

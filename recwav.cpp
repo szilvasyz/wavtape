@@ -10,17 +10,8 @@ uint16_t rsrates[] = {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000};
 
 
 int openRecDir() {
-  dir.close();
-  if (dir.open(REC_DIR))
-    return true;
-    
-  dispError("Creating rec dir");
-  if (!sd.mkdir(REC_DIR, true))
-    dispError("Can't create dir");
-     
-  return dir.open(REC_DIR);
+  return fileio_dopen(REC_DIR);
 }
-
 
 
 void setPreamp() {
@@ -46,10 +37,11 @@ void recButtons2() {
   dispButtons(sBuf);
 }
 
+
 int findRecName(int rno) {
   while (true) {
-    sprintf(nBuf, "rec%05d.wav", rno);
-    if (!dir.exists(nBuf))
+    sprintf(sBuf, "rec%05d.wav", rno);
+    if (!fileio_fexists(sBuf))
       break;
     rno++;
   }
@@ -66,16 +58,14 @@ void record() {
     return;
   }
 
-  strcpy(pBuf, REC_DIR);
-  if (pBuf[strlen(pBuf) - 1] != '/') {
-    strcat(pBuf, "/");
-  }
   recNo = findRecName(0);
   
   while (true) {
 
-    dispLine1(pBuf);
-    dispLine2(nBuf);
+    sprintf(sBuf, "rec%05d.wav", recNo);
+
+    dispLine1(fileio_path());
+    dispLine2(fileio_filename());
     recButtons1();
 
     while (button.peek() == 0);
@@ -102,14 +92,16 @@ void record() {
         return;
 
       case BTN_VAL_ENTER:
-        Serial.print("File open: ");
-        //Serial.println(dataFile.open(nBuf, O_RDWR | O_CREAT));
-        Serial.println(file.createContiguous(&dir, nBuf, 512UL * 2048 * 20 ));
         Serial.print("Recording file ");
-        Serial.println(nBuf);
+        sprintf(sBuf, "rec%05d.wav", recNo);
+        Serial.println(sBuf);
+        sprintf(sBuf, "%srec%05d.wav", fileio_path(), recNo);
+        //Serial.println(dataFile.open(sBuf, O_RDWR | O_CREAT));
+        Serial.print("File open: ");
+        Serial.println(fileio_fopenw(sBuf));
 
-        recFile(&file, rsamplerate);
-        file.close();
+        recFile(rsamplerate);
+        fileio_fclose();
         recNo = findRecName(recNo);
         break;
 
@@ -118,7 +110,7 @@ void record() {
 }
 
 
-void recFile(File32 *f, uint16_t sr) {
+void recFile(uint16_t sr) {
   uint32_t ds = 0, ss = 0;
   int rr = true;
   int recphase = 0;
@@ -127,16 +119,16 @@ void recFile(File32 *f, uint16_t sr) {
   rpaused = 0;
   rinvert = PCM_getRecInv();
 
-  dispLine1(nBuf);
+  dispLine1(fileio_filename());
   dispLine2("");
   recButtons2();
 
-  if (f->isWritable()) {
+  if (!fileio_ferror()) {
     Serial.print("!");
     //Serial.print(f->seekSet(1024L * 1024L));
     W.createBuffer(sr, 1, 8);
-    f->seekSet(0);
-    f->write(W.getBuffer(), WAVHDR_LEN);
+    fileio_fseek(0);
+    fileio_fwrite(W.getBuffer(), WAVHDR_LEN);
 
     setPreamp();
     recButtons2();
@@ -152,7 +144,7 @@ void recFile(File32 *f, uint16_t sr) {
 
     while (rr) {
       if (!rpaused) {
-        f->write(PCM_getRecBuf(), PCM_BUFSIZ);
+        fileio_fwrite(PCM_getRecBuf(), PCM_BUFSIZ);
         PCM_releaseRecBuf();
         ss += PCM_BUFSIZ;
         if ((++ds % 100) == 0) {
@@ -188,9 +180,9 @@ void recFile(File32 *f, uint16_t sr) {
 
           sprintf(sBuf, "%ld bytes", ss);
           W.finalizeBuffer(ss);
-          f->seekSet(0);
-          f->write(W.getBuffer(), WAVHDR_LEN);
-          f->truncate(ss + WAVHDR_LEN); 
+          fileio_fseek(0);
+          fileio_fwrite(W.getBuffer(), WAVHDR_LEN);
+          fileio_ftrunc(ss + WAVHDR_LEN); 
           dispError(sBuf);
           Serial.print(overrun);
           Serial.println("overruns");

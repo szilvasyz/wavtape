@@ -6,6 +6,9 @@
 #define VER_MINOR 1
 #define VER_NAME "dev"
 
+#define USE_SDFAT 1
+//#define USE_CHANFF 1
+
 #define BTN_PIN_PREV  18
 #define BTN_PIN_NEXT  19
 #define BTN_PIN_ABORT 20

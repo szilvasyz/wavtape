@@ -2,13 +2,16 @@
 
 
 MyButton button(BTN_PIN_PREV, BTN_PIN_NEXT, BTN_PIN_ABORT, BTN_PIN_ENTER);
-SdFat sd;
 WAVhdr W;
 
-File32 dir;
-File32 file;
-char nBuf[NBUF_SIZE + 1];
-char pBuf[PBUF_SIZE + 1] = "/";
+// #ifdef USE_SDFAT
+//   SdFat sd;
+//   File32 dir;
+//   File32 file;
+// #endif
+
+// char nBuf[NBUF_SIZE + 1];
+// char pBuf[PBUF_SIZE + 1] = "/";
 char sVer[DISP_COLS + 1];
 
 
@@ -22,11 +25,10 @@ void(* resetFunc) (void) = 0;
 
 int show = 0;
 int sdready = 0;
-char sBuf[SBUF_SIZE];
+char sBuf[SBUF_SIZE + 1];
 
 
 void setup() {
-  int init_cnt = SD_INIT_TRY;
 
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
@@ -45,16 +47,8 @@ void setup() {
   dispHeader(sVer);
   delay(2000);
   dispLine1("Initializing...");
-  sBuf[0] = '\0';
 
-  while (!(sdready = sd.begin(SD_CONFIG)) && init_cnt--) {
-    strcat(sBuf, "#");
-    dispLine2(sBuf);
-    digitalWrite(SD_CS, HIGH);
-    delay(500);
-  }
-
-  if (!sdready) {
+  if (!fileio_init(REC_DIR)) {
     dispLine2("No SD card.");
     while (button.get() == 0);
     resetFunc();

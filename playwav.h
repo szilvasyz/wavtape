@@ -4,6 +4,6 @@
 #include "wavtape.h"
 
 
-void playWav(File32 * f);
+void playWav();
 
 #endif

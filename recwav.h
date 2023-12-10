@@ -4,6 +4,6 @@
 #include "wavtape.h"
 
 void record();
-void recFile(File32 *f, uint16_t sr);
+void recFile(uint16_t sr);
 
 #endif

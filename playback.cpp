@@ -1,49 +1,11 @@
 #include "wavtape.h"
 
 
-int nameMatch(char * buf, char * match) {
-  if (strrchr(buf, '.'))
-    if (strcasecmp(strrchr(buf, '.'), match) == 0)
-      return true;
-  return false;
-}
-
-
-int nextFile(int index) {
-  int i, d;
-
-  if (file.isOpen()) {
-    file.close();
-  }
-
-  while (file.openNext(&dir, O_RDONLY)) {
-    file.getName(nBuf, NBUF_SIZE);
-    i = file.dirIndex();
-    d = file.isDir();
-    file.close();
-    if (d || nameMatch(nBuf, FILEEXT))
-      return i;
-  }
-  return index;
-}
-
-
-int prevFile(int index) {
-  int i = index, j;
-
-  dir.rewindDirectory();
-  while ((j = nextFile(i)) != index) {
-    // Serial.println(j);
-    i = j;
-  }
-  return i;
-}
-
-
 int upDir() {
-  if (pBuf[1] == '\0') return false;
-  *strrchr(pBuf, '/') = '\0';
-  *(strrchr(pBuf, '/') + 1) = '\0';
+  char * p = fileio_path();
+  if (p[1] == '\0') return false;
+  *strrchr(p, '/') = '\0';
+  *(strrchr(p, '/') + 1) = '\0';
   return true;
 }
 
@@ -56,16 +18,15 @@ void browse() {
 
   dispHeader("Playback");
   while (true) {
-    dir.close();
+    // dir.close();
 
-    if (!dir.open(pBuf)) {
-      dispError("Error opening dir");
-      return;
-    }
+    // if (!dir.open(pBuf)) {
+    //   dispError("Error opening dir");
+    //   return;
+    // }
     
-    if ((i = nextFile(-1)) == -1) {
+    if (fileio_first(fileio_path(), ".wav")) {
       dispError("No files");
-      dir.close();
       if (!upDir())
         return;
     }
@@ -75,21 +36,12 @@ void browse() {
 
       while (dirLoop) {
 
-        if (file.isOpen()) {
-          file.close();
-          delay(10);
-        }
-        // Serial.print(i);
-        // Serial.print(":");
-        // Serial.println(file.open(&dir, i, O_RDONLY));
-        file.open(&dir, i, O_RDONLY);
-        file.getName(nBuf, NBUF_SIZE);
-        if (d = file.isDir()) strcat(nBuf, "/");
+        strcpy(sBuf, fileio_filename());
+        if (d = fileio_isdir()) strcat(sBuf, "/");
 
-        file.close();
 
-        dispLine1(pBuf);
-        dispLine2(nBuf);
+        dispLine1(fileio_path());
+        dispLine2(sBuf);
         dispButtons(" PRV NXT ESC SEL");
 
         while ((b = button.get()) == 0);
@@ -97,31 +49,31 @@ void browse() {
         switch (b) {
 
           case BTN_VAL_NEXT:
-            i = nextFile(i);
+            fileio_next(".wav");
             break;
 
           case BTN_VAL_PREV:
-            i = prevFile(i);
+            fileio_prev(".wav");
             break;
 
           case BTN_VAL_ABORT:
-            dir.close();
             if (!upDir())
               return;
             dirLoop = false;
             break;
 
           case BTN_VAL_ENTER:
+            strcpy(sBuf, fileio_path());
+            strcat(sBuf, fileio_filename());
             if (d) {
-              strcat(pBuf, nBuf);
-              dir.close();
+              strcpy(fileio_path(), sBuf);
               dirLoop = false;
               break;
             }
             else {
-              file.open(&dir, i, O_RDONLY);
-              playWav(&file);
-              file.close();
+              fileio_fopenr(sBuf);
+              playWav();
+              fileio_fclose();
             }
         }
       }

@@ -1,19 +1,21 @@
 #include "wavtape.h"
 
 
-File32 *ff;
+// #ifdef USE_SDFAT
+//   File32 *ff;
+// #endif
+
 int atten = 0;
 int paused = 0;
 int pinvert = 0;
 
 
 size_t readHandler(uint8_t *b, size_t s) {
-  return ff->readBytes(b, s);
+  return fileio_fread(b, s);
 }
 
 
-int wavInfo(File32 *f) {
-  ff = f;
+int wavInfo() {
   return W.processBuffer(readHandler);
 }
 
@@ -36,7 +38,7 @@ void playStatus() {
 }
 
 
-void playWav(File32 * f) {
+void playWav() {
 
   uint16_t sr = 48000;
   uint32_t ds = 0, ss = 0;
@@ -49,13 +51,13 @@ void playWav(File32 * f) {
   setAtten();
   playStatus();
 
-  f->rewind();
-  f->getName(sBuf, SBUF_SIZE);
+  fileio_frewind();
+  strcpy(sBuf, fileio_filename());
   dispLine1(sBuf);
   dispLine2("");
 
-  if (f->available()) {
-    if (wavInfo(f)) {
+  if (!fileio_feof()) {
+    if (wavInfo()) {
       sr = W.getData().sampleRate;
       ds = W.getData().dataSize;
 
@@ -70,7 +72,7 @@ void playWav(File32 * f) {
 
       while ((ss < ds) && pp) {
         if (!paused) {
-          f->read(PCM_getPlayBuf(), PCM_BUFSIZ);
+          fileio_fread(PCM_getPlayBuf(), PCM_BUFSIZ);
           PCM_pushPlayBuf();
           ss += PCM_BUFSIZ;
           pct = 100 * ss / ds;

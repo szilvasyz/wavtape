@@ -41,16 +41,21 @@ void setup() {
   button.begin();
 
   pinMode(SD_CS, OUTPUT);
+  pinMode(PIN_SPI_MOSI, OUTPUT);
+  pinMode(PIN_SPI_SCK, OUTPUT);
+  pinMode(PIN_SPI_MISO, INPUT);
   digitalWrite(SD_CS, HIGH);
+  digitalWrite(PIN_SPI_MOSI, LOW);
+  digitalWrite(PIN_SPI_SCK, LOW);
 
   sprintf(sVer, "%s v%d.%d-%s", PRODUCT, VER_MAJOR, VER_MINOR, VER_NAME);
   dispHeader(sVer);
-  delay(2000);
+  delay(1000);
   dispLine1("Initializing...");
 
   if (!fileio_init(REC_DIR)) {
     dispLine2("No SD card.");
-    while (button.get() == 0);
+    while (getButton() == 0);
     resetFunc();
   }
   dispLine2("SD ok.");

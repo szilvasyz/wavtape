@@ -94,7 +94,7 @@ void playWav() {
 
         if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
 
-        switch (button.get()) {
+        switch (getButton()) {
 
           case BTN_VAL_PREV:
             pinvert = !pinvert;

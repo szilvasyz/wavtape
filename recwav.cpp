@@ -70,7 +70,7 @@ void record() {
 
     while (button.peek() == 0);
 
-    switch (button.get()) {
+    switch (getButton()) {
 
       case BTN_VAL_PREV:
         for (rsr = 0; rsrates[rsr] != 0; rsr++)
@@ -160,7 +160,7 @@ void recFile(uint16_t sr) {
       }
 
       if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
-      switch (button.get()) {
+      switch (getButton()) {
 
         case BTN_VAL_PREV:
           rinvert = !rinvert;

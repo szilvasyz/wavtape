@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <mybutton.h>
+#include "button.h"
 #include <LiquidCrystal_PCF8574.h>
 #include <U8g2lib.h>
 #include <WAVhdr.h>

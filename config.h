@@ -23,17 +23,17 @@
 #define BTN_VAL_ABORT 4
 #define BTN_VAL_ENTER 8
 
-// #define DISP_HD44780
-// #define DISP_ADDR 0x27
-// #define DISP_ROWS 4
-// #define DISP_COLS 20
+#define DISP_HD44780
+#define DISP_ADDR 0x27
+#define DISP_ROWS 4
+#define DISP_COLS 20
 
 //#define DISP_SSD1306
-#define DISP_SH1106
+//#define DISP_SH1106
 //#define DISP_SSD1309
-#define DISP_ADDR 0x3C
-#define DISP_ROWS 4
-#define DISP_COLS 16
+// #define DISP_ADDR 0x3C
+// #define DISP_ROWS 4
+// #define DISP_COLS 16
 
 #if (DISP_ROWS == 4)
 #define DISP_HEADER 0

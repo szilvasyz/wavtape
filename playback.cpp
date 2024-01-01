@@ -24,8 +24,10 @@ void browse() {
     //   dispError("Error opening dir");
     //   return;
     // }
+
+    Serial.println(fileio_path());
     
-    if (fileio_first(fileio_path(), ".wav")) {
+    if (!fileio_first(fileio_path(), ".wav")) {
       dispError("No files");
       if (!upDir())
         return;
@@ -44,7 +46,7 @@ void browse() {
         dispLine2(sBuf);
         dispButtons(" PRV NXT ESC SEL");
 
-        while ((b = button.get()) == 0);
+        while ((b = getButton()) == 0);
 
         switch (b) {
 

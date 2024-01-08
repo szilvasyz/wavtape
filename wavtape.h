@@ -11,6 +11,7 @@
 
 
 #include "config.h"
+#include "button.h"
 #include "display.h"
 #include "menu.h"
 #include "setup.h"
@@ -19,7 +20,7 @@
 #include "recwav.h"
 
 
-#define SPI_CLOCK SD_SCK_MHZ(1)
+#define SPI_CLOCK SD_SCK_MHZ(25)
 #define SD_CONFIG SdSpiConfig(SD_CS, DEDICATED_SPI, SPI_CLOCK)
 
 #define size(x) ((int)(sizeof(x) / sizeof(x[0])))

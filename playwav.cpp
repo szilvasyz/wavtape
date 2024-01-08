@@ -31,7 +31,7 @@ void setAtten() {
 
 
 void playStatus() {
-  sprintf(sBuf, "  %c  %s STP %s", pinvert ? '-' : '+', atten ? "-12" : "  0", paused ? "RES" : "PAU");
+  sprintf(sBuf, " %s %s  STP %s", pinvert ? "INV" : "NRM", atten ? "LO" : "HI", paused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
@@ -43,6 +43,8 @@ void playWav(File32 * f) {
   int pp = 1;
   int pct;
   int pct0 = 0;
+  uint8_t *buf; 
+  int wsup;
 
   paused = 0;
   pinvert = PCM_getPlayInv();
@@ -55,7 +57,14 @@ void playWav(File32 * f) {
   dispLine2("");
 
   if (f->available()) {
-    if (wavInfo(f)) {
+    wsup = wavInfo(f);
+    sprintf(sBuf, "Playing   %02uk%1u%c", 
+      (uint16_t) (W.getData().sampleRate / 1000),
+      W.getData().bitsPerSample,
+      W.getData().numChannels < 2 ? 'M' : 'S');
+    dispHeader(sBuf);
+
+    if (wsup) {
       sr = W.getData().sampleRate;
       ds = W.getData().dataSize;
 
@@ -66,11 +75,14 @@ void playWav(File32 * f) {
       Serial.println(PCM_startPlay(true));
 
       PCM_clearOverrun();
-      digitalWrite(RED_LED, LOW);
+      digitalWrite(RED_LED, LEDLOW);
 
       while ((ss < ds) && pp) {
         if (!paused) {
-          f->read(PCM_getPlayBuf(), PCM_BUFSIZ);
+          buf = PCM_getPlayBuf();
+          digitalWrite(GREEN_LED, LEDHIGH);
+          f->read(buf, PCM_BUFSIZ);
+          digitalWrite(GREEN_LED, LEDLOW);
           PCM_pushPlayBuf();
           ss += PCM_BUFSIZ;
           pct = 100 * ss / ds;
@@ -90,9 +102,9 @@ void playWav(File32 * f) {
           }
         }
 
-        if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
+        if (PCM_getOverrun() != 0) digitalWrite(RED_LED, LEDHIGH);
 
-        switch (button.get()) {
+        switch (getButton()) {
 
           case BTN_VAL_PREV:
             pinvert = !pinvert;
@@ -139,5 +151,6 @@ void playWav(File32 * f) {
   Serial.print("Stop play: ");
   Serial.println(PCM_stop());
 
+  dispHeader("Playback");
 
 }

@@ -77,7 +77,7 @@ void browse() {
 
         if (file.isOpen()) {
           file.close();
-          delay(10);
+          //delay(10);
         }
         // Serial.print(i);
         // Serial.print(":");
@@ -92,7 +92,7 @@ void browse() {
         dispLine2(nBuf);
         dispButtons(" PRV NXT ESC SEL");
 
-        while ((b = button.get()) == 0);
+        while ((b = getButton()) == 0);
 
         switch (b) {
 

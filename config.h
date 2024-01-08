@@ -13,6 +13,7 @@
 
 #define GREEN_LED 0
 #define RED_LED 10
+#define INVERT_LEDS 1
 
 
 #define BTN_VAL_PREV  1
@@ -20,26 +21,26 @@
 #define BTN_VAL_ABORT 4
 #define BTN_VAL_ENTER 8
 
-// #define DISP_HD44780
-// #define DISP_ADDR 0x27
-// #define DISP_ROWS 4
-// #define DISP_COLS 20
-
-//#define DISP_SSD1306
-#define DISP_SH1106
-//#define DISP_SSD1309
-#define DISP_ADDR 0x3C
+#define DISP_HD44780
+#define DISP_ADDR 0x27
 #define DISP_ROWS 4
-#define DISP_COLS 16
+#define DISP_COLS 20
+
+// #define DISP_SSD1306
+// #define DISP_SH1106
+// #define DISP_SSD1309
+// #define DISP_ADDR 0x3C
+// #define DISP_ROWS 4
+// #define DISP_COLS 16
 
 #if (DISP_ROWS == 4)
-#define DISP_HEADER 0
-#define DISP_LINE1 1
-#define DISP_LINE2 2
-#define DISP_BUTTONS 3
+  #define DISP_HEADER 0
+  #define DISP_LINE1 1
+  #define DISP_LINE2 2
+  #define DISP_BUTTONS 3
 #else
-#define DISP_LINE1 0
-#define DISP_LINE2 1
+  #define DISP_LINE1 0
+  #define DISP_LINE2 1
 #endif
 
 #define SD_CS 4
@@ -59,5 +60,13 @@
 
 #define REC_SAMPLERATE 16000
 #define REC_DIR "/recs"
+
+#ifdef INVERT_LEDS
+  #define LEDLOW HIGH
+  #define LEDHIGH LOW
+#else
+  #define LEDLOW LOW
+  #define LEDHIGH HIGH
+#endif
 
 #endif

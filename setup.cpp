@@ -2,10 +2,12 @@
 
 
 tMenu setMenu = {
-  {text:"Input amp"},
-  {text:"Output att"},
+  {text:"Play att"},
+  {text:"Play normalizing"},
+  {text:"Play phase"},
+  {text:"Rec amp"},
+  {text:"Rec phase"},
   {text:"Rec bitrate"},
-  {text:"Play normalizing"}
 };
 
 

@@ -13,7 +13,7 @@ void menuDo(char* header, char* title, tMenu menu, int size) {
     dispButtons(" PRV NXT ESC SEL");
     dispLine1(title);
     dispLine2(menu[mPos].text);
-    while ((b = button.get()) == 0);
+    while ((b = getButton()) == 0);
     switch (b) {
       case BTN_VAL_NEXT:
         if (++mPos == size) mPos = 0;

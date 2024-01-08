@@ -80,7 +80,7 @@ void record() {
 
     while (button.peek() == 0);
 
-    switch (button.get()) {
+    switch (getButton()) {
 
       case BTN_VAL_PREV:
         for (rsr = 0; rsrates[rsr] != 0; rsr++)
@@ -148,7 +148,7 @@ void recFile(File32 *f, uint16_t sr) {
     Serial.println(PCM_startRec(true));
 
     PCM_clearOverrun();
-    digitalWrite(RED_LED, LOW);
+    digitalWrite(RED_LED, LEDLOW);
 
     while (rr) {
       if (!rpaused) {
@@ -167,8 +167,8 @@ void recFile(File32 *f, uint16_t sr) {
         }
       }
 
-      if (PCM_getOverrun() != 0) digitalWrite(RED_LED, HIGH);
-      switch (button.get()) {
+      if (PCM_getOverrun() != 0) digitalWrite(RED_LED, LEDHIGH);
+      switch (getButton()) {
 
         case BTN_VAL_PREV:
           rinvert = !rinvert;

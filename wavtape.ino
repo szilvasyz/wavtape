@@ -30,8 +30,8 @@ void setup() {
 
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
-  digitalWrite(GREEN_LED, LOW);
-  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, LEDLOW);
+  digitalWrite(RED_LED, LEDLOW);
   
   Serial.begin(115200);
 
@@ -56,7 +56,7 @@ void setup() {
 
   if (!sdready) {
     dispLine2("No SD card.");
-    while (button.get() == 0);
+    while (getButton() == 0);
     resetFunc();
   }
   dispLine2("SD ok.");

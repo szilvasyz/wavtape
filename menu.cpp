@@ -1,7 +1,8 @@
 #include "wavtape.h"
 
 
-void menuDummy() {}
+void menuActionDummy() {}
+char* menuValueDummy() { return nullptr; }
 
 
 void menuDo(char* header, char* title, tMenu menu, int size) {
@@ -12,7 +13,7 @@ void menuDo(char* header, char* title, tMenu menu, int size) {
     dispHeader(header);
     dispButtons(" PRV NXT ESC SEL");
     dispLine1(title);
-    dispLine2(menu[mPos].text);
+    dispLine2(strcat(strcpy(sBuf, menu[mPos].text), menu[mPos].value()));
     while ((b = getButton()) == 0);
     switch (b) {
       case BTN_VAL_NEXT:

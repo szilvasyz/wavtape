@@ -6,14 +6,17 @@
 
 
 typedef void (*tMenuAction)();
+typedef char* (*tMenuValue)();
 
 
-void menuDummy();
+void menuActionDummy();
+char* menuValueDummy();
 
 
 typedef struct {
   char* text;
-  tMenuAction action = menuDummy;
+  tMenuAction action = menuActionDummy;
+  tMenuValue value = menuValueDummy;
 } tMenuItem;
 
 typedef tMenuItem tMenu[];

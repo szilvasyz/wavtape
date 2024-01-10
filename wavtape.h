@@ -36,4 +36,7 @@ extern char nBuf[];
 extern char pBuf[];
 extern char sBuf[];
 
+extern uint16_t rsrates[];
+extern uint16_t numrsrates;
+
 #endif

@@ -6,7 +6,6 @@ int recNo = 0;
 int rpaused = 0;
 int rinvert = 0;
 uint16_t rsamplerate = REC_SAMPLERATE;
-uint16_t rsrates[] = {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000};
 
 
 int openRecDir() {
@@ -72,30 +71,30 @@ void record() {
   }
   recNo = findRecName(0);
   
+  dispLine1(pBuf);
+  dispLine2(nBuf);
+  recButtons1();
+
   while (true) {
 
-    dispLine1(pBuf);
-    dispLine2(nBuf);
-    recButtons1();
-
-    while (button.peek() == 0);
+    //while (button.peek() == 0);
 
     switch (getButton()) {
 
       case BTN_VAL_PREV:
-        for (rsr = 0; rsrates[rsr] != 0; rsr++)
+        for (rsr = 0; rsr < numrsrates; rsr++)
           if (rsamplerate == rsrates[rsr])
             break;
-        if (rsrates[rsr] == 0) rsr =0;
-        if (rsrates[++rsr] == 0) rsr = 0;
+        if (++rsr >= numrsrates) rsr = 0;
         rsamplerate = rsrates[rsr];
-        recButtons2();
+        recButtons1();
         break;
 
       case BTN_VAL_NEXT:
         preamp = 1 - preamp;
         Serial.print("Preamp :");
         Serial.println(preamp ? "12dB" : "0dB");
+        recButtons1();
         break;
 
       case BTN_VAL_ABORT:

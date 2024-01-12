@@ -30,21 +30,63 @@ char* rPhaseVal() { return (char *)(defCfg.rPhase ? "NORM" : "INV"); }
 char* rSRateVal() { return strcat(itoa(rsrates[defCfg.rSRate] / 1000U, cBuf, DEC), "k"); }
 
 
+void validateConfig() {
+  if ((defCfg.pAtt   < 0) || (defCfg.pAtt   > 1)) defCfg.pAtt   = PLAY_LEVEL;
+  if ((defCfg.pNorm  < 0) || (defCfg.pNorm  > 1)) defCfg.pNorm  = PLAY_NORM;
+  if ((defCfg.pPhase < 0) || (defCfg.pPhase > 1)) defCfg.pPhase = PLAY_PHASE;
+  if ((defCfg.rAmp   < 0) || (defCfg.rAmp   > 1)) defCfg.rAmp   = REC_LEVEL;
+  if ((defCfg.rPhase < 0) || (defCfg.rPhase > 1)) defCfg.rPhase = REC_PHASE;
+  if ((defCfg.rSRate < 0) || (defCfg.rSRate >= numrsrates)) defCfg.rSRate = REC_SRATE;
+
+}
+
+
 void loadConfigEE() {
+  uint32_t sig;
+
+  EEPROM.get(0, sig);
+  if (sig != EESIG) return;
+  EEPROM.get(sizeof(sig), defCfg);
+  validateConfig();
 }
 
 
 void loadConfigSD() {
+  uint32_t sig;
+
+  if (file.open(CFG_FILE, O_RDONLY)) {
+    file.read(&sig, sizeof(sig));
+    if (sig == EESIG) {
+      file.read(&defCfg, sizeof(defCfg));
+      validateConfig();
+    }
+    file.close();
+  }
 }
 
 
 void saveConfigEE() {
+  uint32_t sig;
+
+  sig = EESIG;
+  EEPROM.put(0, sig);
+  EEPROM.put(sizeof(sig), defCfg);
   dispError("Config saved EE");
 }
 
 
 void saveConfigSD() {
-  dispError("Config saved SD");
+  uint32_t sig;
+
+  sig = EESIG;
+  if (file.open(CFG_FILE, O_CREAT | O_WRITE)) {
+    file.write(&sig, sizeof(sig));
+    file.write(&defCfg, sizeof(defCfg));
+    file.close();
+    dispError("Config saved SD");
+  }
+  else
+    dispError("Cfgsave error SD");
 }
 
 

@@ -62,6 +62,8 @@
 #define REC_DIR "/recs"
 #define REC_PREALLOC_MB 20
 
+#define CFG_FILE "/wavtape.cfg"
+
 // defaults
 #define PLAY_LEVEL 0
 #define PLAY_NORM 1

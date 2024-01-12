@@ -1,7 +1,11 @@
 #include "wavtape.h"
 
 
+int index = 0;
+
+
 int nameMatch(char * buf, char * match) {
+  // Serial.printf("---Namematch\n");
   if (strrchr(buf, '.'))
     if (strcasecmp(strrchr(buf, '.'), match) == 0)
       return true;
@@ -9,64 +13,78 @@ int nameMatch(char * buf, char * match) {
 }
 
 
-int nextFile(int index) {
-  int i, d;
+void nextFile() {
+  int d;
 
+  // Serial.printf("---Nextfile\n");
   if (file.isOpen()) {
     file.close();
   }
 
   while (file.openNext(&dir, O_RDONLY)) {
     file.getName(nBuf, NBUF_SIZE);
-    i = file.dirIndex();
+    index = file.dirIndex();
     d = file.isDir();
+    // Serial.printf("Next: %i:%d:%s\n", index, d, nBuf);
     file.close();
-    if (d || nameMatch(nBuf, FILEEXT))
-      return i;
+    if (d || nameMatch(nBuf, FILEEXT)) {
+      return;
+    }
   }
-  return index;
+  index = -1;
 }
 
 
-int prevFile(int index) {
-  int i = index, j;
+void prevFile() {
+  // Serial.printf("---Prevfile\n");
+  int i, j;
 
+  j = -1;
+  i = index;
+  firstFile();
+  do {
+    if (index == i) {
+      index = j;
+      return;
+    }
+    j = index;
+    nextFile();
+  } while (index != -1);
+}
+
+
+void firstFile() {
+  // Serial.printf("---Firstfile\n");
   dir.rewindDirectory();
-  while ((j = nextFile(i)) != index) {
-    // Serial.println(j);
-    i = j;
-  }
-  return i;
+  nextFile();
 }
 
 
-int firstFile() {
-  dir.rewindDirectory();
-  return nextFile(0);
-}
-
-
-int lastFile() {
-  int i = 0, j;
-  while ((j = nextFile(i)) != i) { i = j; }
-  return j;
-}
-
-
-int findFile(char * p) {
+void lastFile() {
+  // Serial.printf("---Lastfile\n");
   int i;
-
-  while (file.openNext(&dir, O_RDONLY)) {
-    file.getName(nBuf, NBUF_SIZE);
-    i = file.dirIndex();
-    file.close();
-    if (strcmp(nBuf, p) == 0)
-      return i;
-  }
-
-  dir.rewindDirectory();
-  return nextFile(0);
+  firstFile();
+  i = index;
+  while (nextFile(), index != -1) { i = index; }
+  index = i;
 }
+
+
+void findFile(char * p) {
+  int i = 0, j;
+
+  // Serial.printf("---Findfile\n");
+  firstFile();
+  do {
+    // Serial.printf("** %i **\n", index);
+    if (strcmp(nBuf, p) == 0)
+      return;
+    nextFile();
+    // Serial.printf("**# %i #**\n", index);
+  } while (index != -1);
+}
+
+
 
 
 int upDir() {
@@ -82,7 +100,7 @@ int upDir() {
 
 void browse() {
   uint16_t b;
-  int i, j;
+  int j;
   int d;
   int dirLoop;
 
@@ -97,7 +115,7 @@ void browse() {
 
     strcpy(sBuf, nBuf);
 
-    if ((i = nextFile(-1)) == -1) {
+    if (firstFile(), index == -1) {
       dispError("No files");
       dir.close();
       if (!upDir())
@@ -105,7 +123,7 @@ void browse() {
     }
     else {
 
-      i = findFile(sBuf);
+      if (findFile(sBuf), index == -1) firstFile();
 
       dirLoop = true;
 
@@ -115,10 +133,11 @@ void browse() {
           file.close();
           //delay(10);
         }
-        // Serial.print(i);
+        // Serial.print(index);
         // Serial.print(":");
+        // Serial.println(sBuf);
         // Serial.println(file.open(&dir, i, O_RDONLY));
-        file.open(&dir, i, O_RDONLY);
+        file.open(&dir, index, O_RDONLY);
         file.getName(nBuf, NBUF_SIZE);
         if (d = file.isDir()) strcat(nBuf, "/");
 
@@ -133,19 +152,17 @@ void browse() {
         switch (b) {
 
           case BTN_VAL_NEXT:
-            j = nextFile(i);
-            if (j == i) {
-              j = firstFile();
+            nextFile();
+            if (index == -1) {
+              firstFile();
             }
-            i = j;
             break;
 
           case BTN_VAL_PREV:
-            j = prevFile(i);
-            if (j == i) {
-              j = lastFile();
+            prevFile();
+            if (index == -1) {
+              lastFile();
             }
-            i = j;
             break;
 
           case BTN_VAL_ABORT:
@@ -158,12 +175,13 @@ void browse() {
           case BTN_VAL_ENTER:
             if (d) {
               strcat(pBuf, nBuf);
+              nBuf[0] = '\0';
               dir.close();
               dirLoop = false;
               break;
             }
             else {
-              file.open(&dir, i, O_RDONLY);
+              file.open(&dir, index, O_RDONLY);
               playWav(&file);
               file.close();
             }

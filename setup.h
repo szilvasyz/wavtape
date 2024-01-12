@@ -3,6 +3,10 @@
 
 
 #include "wavtape.h"
+#include <EEPROM.h>
+
+
+#define EESIG 0x55AA33CC
 
 
 typedef struct {

@@ -4,6 +4,12 @@
 #include "wavtape.h"
 
 
+void firstFile();
+void lastFile();
+void nextFile();
+void prevFile();
+void findFile(char * p);
+
 void browse();
 
 

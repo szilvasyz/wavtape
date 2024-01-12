@@ -58,8 +58,18 @@
 #define ANA_PREAMP_PIN A1
 #define ANA_ATTEN_PIN A2
 
-#define REC_SAMPLERATE 16000
+#define REC_SRATES {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000}
 #define REC_DIR "/recs"
+#define REC_PREALLOC_MB 20
+
+// defaults
+#define PLAY_LEVEL 0
+#define PLAY_NORM 1
+#define PLAY_PHASE 0
+#define REC_LEVEL 1
+#define REC_PHASE 0
+#define REC_SRATE 2
+
 
 #ifdef INVERT_LEDS
   #define LEDLOW HIGH

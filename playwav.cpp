@@ -31,7 +31,7 @@ void setAtten() {
 
 
 void playStatus() {
-  sprintf(sBuf, " %s %s  STP %s", pinvert ? "INV" : "NRM", atten ? "LO" : "HI", paused ? "RES" : "PAU");
+  sprintf(sBuf, " %s %s  STP %s", pinvert ? "INV" : "NRM", atten ? "HI" : "LO", paused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
@@ -47,7 +47,9 @@ void playWav(File32 * f) {
   int wsup;
 
   paused = 0;
-  pinvert = PCM_getPlayInv();
+  atten = defCfg.pAtt;
+  pinvert = defCfg.pPhase;
+  PCM_setPlayInv(pinvert);
   setAtten();
   playStatus();
 
@@ -72,7 +74,7 @@ void playWav(File32 * f) {
       Serial.println(PCM_setupPWM(sr, pinvert));
       Serial.print("Start play: ");
       delay(200);
-      Serial.println(PCM_startPlay(true));
+      Serial.println(PCM_startPlay(defCfg.pNorm));
 
       PCM_clearOverrun();
       digitalWrite(RED_LED, LEDLOW);

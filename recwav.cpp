@@ -5,7 +5,7 @@ int preamp = 0;
 int recNo = 0;
 int rpaused = 0;
 int rinvert = 0;
-uint16_t rsamplerate = REC_SAMPLERATE;
+uint16_t rsamplerate = REC_SRATE;
 
 
 int openRecDir() {
@@ -35,13 +35,13 @@ void setPreamp() {
 
 
 void recButtons1() {
-  sprintf(sBuf, " %02uk %s ESC REC", rsamplerate / 1000U, preamp ? "+12" : "  0");
+  sprintf(sBuf, " %02uk %s ESC REC", rsrates[rsamplerate] / 1000U, preamp ? "LO" : "HI");
   dispButtons(sBuf);
 }
 
 
 void recButtons2() {
-  sprintf(sBuf, "  %c  %s STP %s", rinvert ? '-' : '+', preamp ? "+12" : "  0", rpaused ? "RES" : "PAU");
+  sprintf(sBuf, "  %s  %s STP %s", rinvert ? "INV" : "NRM", preamp ? "LO" : "HI", rpaused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
@@ -58,7 +58,10 @@ int findRecName(int rno) {
 
 void record() {
   int b;
-  int rsr = 0;
+  //int rsr = 0;
+
+  rsamplerate = defCfg.rSRate;
+  preamp = defCfg.rAmp;
 
   dispHeader("Record");
   if (!openRecDir()) {
@@ -82,11 +85,13 @@ void record() {
     switch (getButton()) {
 
       case BTN_VAL_PREV:
-        for (rsr = 0; rsr < numrsrates; rsr++)
-          if (rsamplerate == rsrates[rsr])
-            break;
-        if (++rsr >= numrsrates) rsr = 0;
-        rsamplerate = rsrates[rsr];
+        if (++rsamplerate >= numrsrates)
+          rsamplerate = 0;
+        // for (rsr = 0; rsr < numrsrates; rsr++)
+        //   if (rsamplerate == rsrates[rsr])
+        //     break;
+        // if (++rsr >= numrsrates) rsr = 0;
+        // rsamplerate = rsrates[rsr];
         recButtons1();
         break;
 
@@ -103,11 +108,11 @@ void record() {
       case BTN_VAL_ENTER:
         Serial.print("File open: ");
         //Serial.println(dataFile.open(nBuf, O_RDWR | O_CREAT));
-        Serial.println(file.createContiguous(&dir, nBuf, 512UL * 2048 * 20 ));
+        Serial.println(file.createContiguous(&dir, nBuf, 512UL * 2048 * REC_PREALLOC_MB ));
         Serial.print("Recording file ");
         Serial.println(nBuf);
 
-        recFile(&file, rsamplerate);
+        recFile(&file, rsrates[rsamplerate]);
         file.close();
         recNo = findRecName(recNo);
         break;
@@ -124,7 +129,10 @@ void recFile(File32 *f, uint16_t sr) {
   uint32_t overrun;
 
   rpaused = 0;
-  rinvert = PCM_getRecInv();
+  rinvert = defCfg.rPhase;
+
+  setPreamp();
+  PCM_setRecInv(rinvert);
 
   dispLine1(nBuf);
   dispLine2("");
@@ -137,11 +145,10 @@ void recFile(File32 *f, uint16_t sr) {
     f->seekSet(0);
     f->write(W.getBuffer(), WAVHDR_LEN);
 
-    setPreamp();
     recButtons2();
 
     Serial.print("Setup: ");
-    Serial.println(PCM_setupPWM(sr, 0));
+    Serial.println(PCM_setupPWM(sr, defCfg.pPhase));
     Serial.print("Start recording: ");
     delay(200);
     Serial.println(PCM_startRec(true));

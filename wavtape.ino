@@ -11,7 +11,7 @@ char nBuf[NBUF_SIZE + 1];
 char pBuf[PBUF_SIZE + 1] = "/";
 char sVer[DISP_COLS + 1];
 
-uint16_t rsrates[] = {8000, 11025, 16000, 22100, 24000, 32000, 44100, 48000};
+uint16_t rsrates[] = REC_SRATES;
 uint16_t numrsrates = size(rsrates);
 
 tMenu mainMenu = {

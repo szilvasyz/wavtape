@@ -40,17 +40,49 @@ int prevFile(int index) {
 }
 
 
+int firstFile() {
+  dir.rewindDirectory();
+  return nextFile(0);
+}
+
+
+int lastFile() {
+  int i = 0, j;
+  while ((j = nextFile(i)) != i) { i = j; }
+  return j;
+}
+
+
+int findFile(char * p) {
+  int i;
+
+  while (file.openNext(&dir, O_RDONLY)) {
+    file.getName(nBuf, NBUF_SIZE);
+    i = file.dirIndex();
+    file.close();
+    if (strcmp(nBuf, p) == 0)
+      return i;
+  }
+
+  dir.rewindDirectory();
+  return nextFile(0);
+}
+
+
 int upDir() {
+  char *p;
   if (pBuf[1] == '\0') return false;
   *strrchr(pBuf, '/') = '\0';
-  *(strrchr(pBuf, '/') + 1) = '\0';
+  p = strrchr(pBuf, '/');
+  strcpy(nBuf, p + 1);
+  *(p + 1) = '\0';
   return true;
 }
 
 
 void browse() {
   uint16_t b;
-  int i;
+  int i, j;
   int d;
   int dirLoop;
 
@@ -62,7 +94,9 @@ void browse() {
       dispError("Error opening dir");
       return;
     }
-    
+
+    strcpy(sBuf, nBuf);
+
     if ((i = nextFile(-1)) == -1) {
       dispError("No files");
       dir.close();
@@ -70,6 +104,8 @@ void browse() {
         return;
     }
     else {
+
+      i = findFile(sBuf);
 
       dirLoop = true;
 
@@ -97,11 +133,19 @@ void browse() {
         switch (b) {
 
           case BTN_VAL_NEXT:
-            i = nextFile(i);
+            j = nextFile(i);
+            if (j == i) {
+              j = firstFile();
+            }
+            i = j;
             break;
 
           case BTN_VAL_PREV:
-            i = prevFile(i);
+            j = prevFile(i);
+            if (j == i) {
+              j = lastFile();
+            }
+            i = j;
             break;
 
           case BTN_VAL_ABORT:

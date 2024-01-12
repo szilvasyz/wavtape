@@ -29,6 +29,7 @@
 extern MyButton button;
 extern SdFat sd;
 extern WAVhdr W;
+extern tCfg defCfg;
 
 extern File32 dir;
 extern File32 file;

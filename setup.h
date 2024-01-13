@@ -19,6 +19,8 @@ typedef struct {
 } tCfg;
 
 
+void loadConfigEE();
+void loadConfigSD();
 void doSetMenu();
 
 

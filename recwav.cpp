@@ -58,6 +58,7 @@ int findRecName(int rno) {
 
 void record() {
   int b;
+  int redraw = 1;
   //int rsr = 0;
 
   rsamplerate = defCfg.rSRate;
@@ -74,13 +75,14 @@ void record() {
   }
   recNo = findRecName(0);
   
-  dispLine1(pBuf);
-  dispLine2(nBuf);
-  recButtons1();
-
   while (true) {
 
-    //while (button.peek() == 0);
+    if (redraw) {
+      dispLine1(pBuf);
+      dispLine2(nBuf);
+      recButtons1();
+      redraw = 0;
+    }
 
     switch (getButton()) {
 
@@ -92,14 +94,14 @@ void record() {
         //     break;
         // if (++rsr >= numrsrates) rsr = 0;
         // rsamplerate = rsrates[rsr];
-        recButtons1();
+        redraw = 1;
         break;
 
       case BTN_VAL_NEXT:
         preamp = 1 - preamp;
-        Serial.print("Preamp :");
-        Serial.println(preamp ? "12dB" : "0dB");
-        recButtons1();
+        // Serial.print("Preamp :");
+        // Serial.println(preamp ? "12dB" : "0dB");
+        redraw = 1;
         break;
 
       case BTN_VAL_ABORT:
@@ -115,6 +117,7 @@ void record() {
         recFile(&file, rsrates[rsamplerate]);
         file.close();
         recNo = findRecName(recNo);
+        redraw = 1;
         break;
 
     }
@@ -127,6 +130,7 @@ void recFile(File32 *f, uint16_t sr) {
   int rr = true;
   int recphase = 0;
   uint32_t overrun;
+  int bcnt, bmax;
 
   rpaused = 0;
   rinvert = defCfg.rPhase;
@@ -155,22 +159,31 @@ void recFile(File32 *f, uint16_t sr) {
 
     PCM_clearOverrun();
     digitalWrite(RED_LED, LEDLOW);
+    bmax = sr / PCM_BUFSIZ;
+    bcnt = bmax;
 
     while (rr) {
       if (!rpaused) {
         f->write(PCM_getRecBuf(), PCM_BUFSIZ);
         PCM_releaseRecBuf();
         ss += PCM_BUFSIZ;
-        if ((++ds % 100) == 0) {
-          Serial.print(".");
+        if (!--bcnt) {
+          bcnt = bmax;
           recphase = ++recphase % 4;
           dispSetPos(0, DISP_LINE2);
-          display("\x01|/-"[recphase]);
-          if (ds >= 4000) {
-            Serial.println("!");
-            ds = 0;
-          }
+          sprintf(sBuf, "%c%likB", "\x01|/-"[recphase], ss / 1000U);
+          display(sBuf);
         }
+        // if ((++ds % 100) == 0) {
+        //   Serial.print(".");
+        //   recphase = ++recphase % 4;
+        //   dispSetPos(0, DISP_LINE2);
+        //   display("\x01|/-"[recphase]);
+        //   if (ds >= 4000) {
+        //     Serial.println("!");
+        //     ds = 0;
+        //   }
+        // }
       }
 
       if (PCM_getOverrun() != 0) digitalWrite(RED_LED, LEDHIGH);

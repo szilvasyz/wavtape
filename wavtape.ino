@@ -70,6 +70,9 @@ void setup() {
 
 void loop() {
 
+  loadConfigEE();
+  loadConfigSD();
+
   menuDo(sVer, "Select mode:", mainMenu, size(mainMenu));
 
 }  // loop()

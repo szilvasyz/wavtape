@@ -45,6 +45,8 @@ void playWav(File32 * f) {
   int pct0 = 0;
   uint8_t *buf; 
   int wsup;
+  int bcnt, bmax;
+  int bphase;
 
   paused = 0;
   atten = defCfg.pAtt;
@@ -78,30 +80,41 @@ void playWav(File32 * f) {
 
       PCM_clearOverrun();
       digitalWrite(RED_LED, LEDLOW);
+      bmax = W.getData().sampleRate / PCM_BUFSIZ;
+      bcnt = bmax;
+      bphase = 0;
 
       while ((ss < ds) && pp) {
         if (!paused) {
           buf = PCM_getPlayBuf();
-          digitalWrite(GREEN_LED, LEDHIGH);
+          //digitalWrite(GREEN_LED, LEDHIGH);
           f->read(buf, PCM_BUFSIZ);
-          digitalWrite(GREEN_LED, LEDLOW);
+          //digitalWrite(GREEN_LED, LEDLOW);
           PCM_pushPlayBuf();
           ss += PCM_BUFSIZ;
           pct = 100 * ss / ds;
-          if (pct != pct0) {
-            pct0 = pct;
-            if (((pct % 10) % 3) == 1) {
-              dispSetPos(0, DISP_LINE2);
-              display("\x01/-"[(pct % 10) / 3]);
-              Serial.print(".");
-            }
-            if ((pct % 10) == 0) {
-              sprintf(sBuf, "+%d%%", pct);
-              dispLine2(sBuf);
-              Serial.print(pct);
-              Serial.print("%");
-            }
+
+          if (!--bcnt) {
+            bcnt = bmax;
+            dispSetPos(0, DISP_LINE2);
+            sprintf(sBuf, "%c%d%%", "\x01|/-"[bphase++], pct);
+            display(sBuf);
+            bphase %= 4;
           }
+          // if (pct != pct0) {
+          //   pct0 = pct;
+          //   if (((pct % 10) % 3) == 1) {
+          //     dispSetPos(0, DISP_LINE2);
+          //     display("\x01/-"[(pct % 10) / 3]);
+          //     Serial.print(".");
+          //   }
+          //   if ((pct % 10) == 0) {
+          //     sprintf(sBuf, "+%d%%", pct);
+          //     dispLine2(sBuf);
+          //     Serial.print(pct);
+          //     Serial.print("%");
+          //   }
+          // }
         }
 
         if (PCM_getOverrun() != 0) digitalWrite(RED_LED, LEDHIGH);

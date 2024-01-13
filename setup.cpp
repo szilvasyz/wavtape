@@ -103,7 +103,5 @@ tMenu setMenu = {
 
 
 void doSetMenu() {
-  loadConfigEE();
-  loadConfigSD();
   menuDo("Settings", "Select setting:", setMenu, size(setMenu));
 }

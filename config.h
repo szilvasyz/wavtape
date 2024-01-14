@@ -6,6 +6,9 @@
 #define VER_MINOR 1
 #define VER_NAME "dev"
 
+// hardware built on TAPUINO PCB
+#define TAPUINO_PCB
+
 #define BTN_PIN_PREV  18
 #define BTN_PIN_NEXT  19
 #define BTN_PIN_ABORT 20
@@ -53,7 +56,11 @@
 #define PBUF_SIZE 200
 #define FILEEXT ".wav"
 
-#define DIG_OUT_PIN  14
+#ifdef TAPUINO_PCB
+  #define DIG_OUT_PIN  11
+#else
+  #define DIG_OUT_PIN  14
+#endif
 #define ANA_IN_PIN A0
 #define ANA_PREAMP_PIN A1
 #define ANA_ATTEN_PIN A2

@@ -22,7 +22,7 @@ void rAmpAction()   { defCfg.rAmp   = 1 - defCfg.rAmp;   }
 void rPhaseAction() { defCfg.rPhase = 1 - defCfg.rPhase; }
 void rSRateAction() { if (++defCfg.rSRate >= numrsrates) defCfg.rSRate = 0; }
 
-char* pAttVal()   { return (char *)(defCfg.pAtt   ? "HI"   : "LO" ); }
+char* pAttVal()   { return (char *)(defCfg.pAtt   ? "LO"   : "HI" ); }
 char* pNormVal()  { return (char *)(defCfg.pNorm  ? "ON"   : "OFF"); }
 char* pPhaseVal() { return (char *)(defCfg.pPhase ? "NORM" : "INV"); }
 char* rAmpVal()   { return (char *)(defCfg.rAmp   ? "LO"   : "HI" ); }

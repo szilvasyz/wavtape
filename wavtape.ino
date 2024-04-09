@@ -25,7 +25,7 @@ void(* resetFunc) (void) = 0;
 int show = 0;
 int sdready = 0;
 char sBuf[SBUF_SIZE];
-
+scr_t scr;
 
 void setup() {
   int init_cnt = SD_INIT_TRY;
@@ -56,11 +56,14 @@ void setup() {
     delay(500);
   }
 
-  if (!sdready) {
-    dispLine2("No SD card.");
+  if (!sdready || !sd.card()->readSCR(&scr)) {
+    dispLine2("No or failed SD card.");
     while (getButton() == 0);
     resetFunc();
   }
+
+  Serial.printf("sdType, sdSpecVer: %u, %u\n", sd.card()->type(), scr.sdSpecVer());
+    
   dispLine2("SD ok.");
 
   PCM_init(DIG_OUT_PIN, ANA_IN_PIN);

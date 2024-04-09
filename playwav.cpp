@@ -31,7 +31,7 @@ void setAtten() {
 
 
 void playStatus() {
-  sprintf(sBuf, " %s %s  STP %s", pinvert ? "INV" : "NRM", atten ? "HI" : "LO", paused ? "RES" : "PAU");
+  sprintf(sBuf, " %s %s  STP %s", pinvert ? "INV" : "NRM", atten ? "LO" : "HI", paused ? "RES" : "PAU");
   dispButtons(sBuf);
 }
 
